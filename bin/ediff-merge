@@ -1,0 +1,90 @@
+#!/usr/bin/perl
+#
+# ediff-merge(1) - a frontend command for ediff-merge
+#
+# Copyright (c) 2012, 2013 Akinori MUSHA
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# See https://github.com/knu/emacsc for the latest information.
+
+use Cwd qw(abs_path);
+use File::Basename;
+
+main();
+
+sub main {
+    my $name = basename($0);
+
+    if (@ARGV < 3 || 4 < @ARGV) {
+        print STDERR <<EOF;
+usage: $name local remote base merged
+       $name local remote merged
+
+This command depends on emacsc(1) and ediff-batch.el.  Put the
+following lines in your Emacs initialization file.
+
+    (require 'emacsc)
+    (require 'ediff-batch)
+EOF
+        exit 64;
+    }
+
+    if (@ARGV == 4 && $ARGV[2] eq '') {
+        splice(@ARGV, 2, 1);
+    }
+
+    my $format;
+    if (@ARGV == 3) {
+        $format = '(ediff-merge-files-in-batch-mode "%s" "%s" nil "%s")';
+    } else {
+        $format = '(ediff-merge-files-with-ancestor-in-batch-mode "%s" "%s" "%s" nil "%s")';
+    }
+
+    eval {
+        my $merged = abs_path(pop @ARGV);
+        my @files = map { check_file($_) } @ARGV;
+        exec qw(emacsc -x),
+            sprintf($format,
+                    map { elisp_escape($_) } (@files, $merged));
+    };
+    if ($@) {
+        print STDERR $name, ": ", $@;
+        exit 1;
+    }
+}
+
+sub check_file {
+    my($file) = @_;
+
+    -f $file and return abs_path($file);
+
+    die sprintf("%s: %s\n", $file, $! || 'Not a regular file');
+}
+
+sub elisp_escape {
+    (local $_) = @_;
+    s/[\\"]/\\$1/;
+    $_;
+}

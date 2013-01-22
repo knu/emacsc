@@ -31,6 +31,33 @@ directory in your load-path and add this to your ~/.emacs.d/init.el.
 
     (require 'emacsc)
 
+## ediff(1), ediff-merge(1)
+
+Ediff(1) and ediff-merge(1) are frontend commands to invoke ediff
+functions.
+
+usage: ediff file1 file2
+
+usage: ediff-merge local remote base merged
+       ediff-merge local remote merged
+
+These commands depend on emacsc(1) and ediff-batch.el.  Put the
+following line in your Emacs initialization file in addition to the
+one above for emacsc.
+
+    (require 'ediff-batch)
+
+To use them from Git, put the following lines in your ~/.gitconfig.
+
+    [diff]
+        tool = ediff
+    [difftool "ediff"]
+        cmd = ediff \"$LOCAL\" \"$REMOTE\"
+    [merge]
+        tool = ediff
+    [mergetool "ediff"]
+        cmd = ediff-merge \"$LOCAL\" \"$REMOTE\" \"$BASE\" \"$MERGED\"
+
 ## SEE ALSO
 
 - [e(1) - a smart wrapper for $EDITOR](https://github.com/knu/e)
