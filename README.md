@@ -1,0 +1,46 @@
+# Emacs as a command line tool
+
+## emacsc(1)
+
+Emacsc(1) is a wrapper of emacsclient(1) for use within a terminal,
+which helps use Emacs more as command line tool than just a standalone
+environment.
+
+    usage: emacsc [-dk] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
+
+        -h, --help      show this help
+        -d, --daemon    run Emacs as daemon and quit
+        -k, --kill      kill Emacs daemon
+        -e, --eval=EXPR
+                        evaluate the Lisp expression EXPR and print the
+                        result without a frame opened
+        -x, --execute=EXPR
+                        interactively execute the Lisp expression EXPR
+        -f, --funcall=FUNC
+                        interactively call the Lisp function FUNC
+
+This command is a wrapper of emacsclient for use within a terminal.
+It adds the -t option so that Emacs opens a new frame on the current
+terminal, making the command itself suitable as a value for EDITOR.
+
+A byte-compiled initialization file is automatically removed before
+running Emacs if outdated, i.e. older than the original file.
+
+In order for -x and -f to work, install lisp/emacsc.el into a
+directory in your load-path and add this to your ~/.emacs.d/init.el.
+
+    (require 'emacsc)
+
+## SEE ALSO
+
+- [e(1) - a smart wrapper for $EDITOR](https://github.com/knu/e)
+
+## AUTHOR
+
+Copyright (c) 2012, 2013 Akinori MUSHA.
+
+Licensed under the 2-clause BSD license.  See `LICENSE.txt` for
+details.
+
+Visit [GitHub Repository](https://github.com/knu/emacsc) for the latest
+information.
