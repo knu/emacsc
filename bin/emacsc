@@ -120,7 +120,7 @@ shift $((OPTIND-1))
 
 for el in "$HOME"/.emacs.d/init.el "$HOME"/.emacs.el  "$HOME"/.emacs; do
     if [ -f "$el" ]; then
-        [ "$el" -nt "${el%.el}.elc" ] || rm -f "${el%.el}.elc"
+        [ "$el" -nt "${el%.el}.elc" ] && rm -f "${el%.el}.elc"
         break
     fi
 done
