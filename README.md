@@ -58,6 +58,20 @@ To use them from Git, put the following lines in your ~/.gitconfig.
     [mergetool "ediff"]
         cmd = ediff-merge \"$LOCAL\" \"$REMOTE\" \"$BASE\" \"$MERGED\"
 
+## magit(1)
+
+Magit(1) is a frontend command to invoke magit-status.
+
+usage: magit [direcotry]
+
+Run magit-status on a given directory.  If omitted, ask where with the
+current directory as default.
+
+This command depends on emacsc(1).  Put the following lines in your
+Emacs initialization file.
+
+    (require 'emacsc)
+
 ## SEE ALSO
 
 - [e(1) - a smart wrapper for $EDITOR](https://github.com/knu/e)
