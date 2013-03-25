@@ -135,7 +135,13 @@ fi
 
 if [ -n "${quiet+t}" ]; then
     exec emacsclient "$@" >/dev/null 2>&1
-elif [ -n "${tty+t}" ]; then
+fi
+
+case `emacsclient -e window-system` in
+    mac|w32) unset tty ;;
+esac
+
+if [ -n "${tty+t}" ]; then
     : ${TTY:=`tty 2>/dev/null`}
     : ${TTY:=/dev/tty}
     # emacsclient(1) calls ttyname() on stdout
