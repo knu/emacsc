@@ -45,15 +45,17 @@
      (ediff-defvar-local my-ediff-close-on-quit nil "True if the buffer should be closed on quit.")
 
      (defun my-ediff-batch-mode (&optional mode)
-       (ediff-with-current-buffer ediff-buffer-A
-                                  (case mode
-                                    (set
-                                     (setq my-ediff-batch-mode-p t))
-                                    (unset
-                                     (prog1 my-ediff-batch-mode-p
-                                       (setq my-ediff-batch-mode-p nil)))
-                                    (t
-                                     my-ediff-batch-mode-p))))
+       (let (ret)
+         (ediff-with-current-buffer ediff-buffer-A
+           (case mode
+             (set
+              (setq ret (setq my-ediff-batch-mode-p t)))
+             (unset
+              (setq ret my-ediff-batch-mode-p)
+              (setq my-ediff-batch-mode-p nil))
+             (t
+              (setq ret my-ediff-batch-mode-p))))
+         ret))
 
      (defadvice ediff-find-file (around
                                  mark-newly-opened-buffers
