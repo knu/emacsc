@@ -31,11 +31,16 @@
 
 usage () {
     cat <<EOF >&2
-usage: $(basename "$0") [-dk] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
+usage: $(basename "$0") [-cdgkn] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
 
     -h, --help      show this help
     -d, --daemon    run Emacs as daemon and quit
     -k, --kill      kill Emacs daemon
+    -g, --no-tty    do not prefer tty
+    -c, --create-frame
+                    create a new frame
+    -n, --no-wait
+                    do not wait and return immediately
     -e, --eval=EXPR
                     evaluate the Lisp expression EXPR and print the
                     result without a frame opened
@@ -43,6 +48,8 @@ usage: $(basename "$0") [-dk] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
                     interactively execute the Lisp expression EXPR
     -f, --funcall=FUNC
                     interactively call the Lisp function FUNC
+
+Default options can be put in the environment variable EMACSCOPT.
 
 This command is a wrapper of emacsclient(1) for use within a terminal.
 It adds the -t option so that Emacs opens a new frame on the current
@@ -61,10 +68,14 @@ EOF
 : ${ALTERNATE_EDITOR=}
 export ALTERNATE_EDITOR
 
-unset expr func quiet void
+unset expr func quiet void args
 tty=t
 
-while getopts dke:x:f:h-: opt; do
+if [ -n "${EMACSCOPT+t}" ]; then
+    set -- $EMACSCOPT "$@"
+fi
+
+while getopts cdgkne:x:f:h-: opt; do
     if [ "$opt" = - ]; then
         case "$OPTARG" in
             *\=*)
@@ -100,6 +111,15 @@ while getopts dke:x:f:h-: opt; do
             func="$OPTARG"
             void=t
             ;;
+        c|create-frame)
+            args="$args -c"
+            ;;
+        g|no-tty)
+            unset tty
+            ;;
+        n|no-wait)
+            args="$args -n"
+            ;;
         h|help)
             usage
             exit
@@ -131,6 +151,10 @@ fi
 
 if [ -n "${expr+t}" ]; then
     set -- -e "${void+@}$expr" "$@"
+fi
+
+if [ -n "${args+t}" ]; then
+    set -- $args "$@"
 fi
 
 if [ -n "${quiet+t}" ]; then
