@@ -1,5 +1,4 @@
-;;
-;; emacsc.el - helper for emacsc(1)
+;;; emacsc.el --- helper for emacsc(1)
 ;;
 ;; Copyright (c) 2012, 2013 Akinori MUSHA
 ;;
@@ -28,6 +27,10 @@
 ;;
 ;; See https://github.com/knu/emacsc for the latest information.
 
+;;; Commentary:
+
+;;; Code:
+
 (eval-after-load "server"
   '(defadvice server-eval-and-print
      (before suppress-output (expr proc) activate)
@@ -36,3 +39,5 @@
        (ad-set-arg 1 nil))))
 
 (provide 'emacsc)
+
+;;; emacsc.el ends here
