@@ -1,5 +1,5 @@
-;;
-;; ediff-batch.el - helper for ediff(1) and ediff-merge(1)
+
+;;; ediff-batch.el --- helper for ediff(1) and ediff-merge(1)
 ;;
 ;; Copyright (c) 2012, 2013 Akinori MUSHA
 ;;
@@ -28,6 +28,17 @@
 ;;
 ;; See https://github.com/knu/emacsc for the latest information.
 
+;; Author: Akinori MUSHA <knu@iDaemons.org>
+;; URL: https://github.com/knu/emacsc
+;; Created: 23 Jul 2012
+;; Version: 1.0.20130814
+;; Keywords: tools
+
+;;; Commentary:
+
+;;; Code:
+
+;;;###autoload
 (eval-after-load "ediff"
   '(progn
      ; save and restore window configuration
@@ -116,8 +127,13 @@
         (cons (function (lambda () (my-ediff-batch-mode 'set))) startup-hooks)
         merge-buffer-file))))
 
+;;;###autoload
 (autoload 'ediff-files-in-batch-mode "ediff")
+;;;###autoload
 (autoload 'ediff-merge-files-in-batch-mode "ediff")
+;;;###autoload
 (autoload 'ediff-merge-files-with-ancestor-in-batch-mode "ediff")
 
 (provide 'ediff-batch)
+
+;;; ediff-batch.el ends here

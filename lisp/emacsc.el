@@ -1,3 +1,4 @@
+
 ;;; emacsc.el --- helper for emacsc(1)
 ;;
 ;; Copyright (c) 2012, 2013 Akinori MUSHA
@@ -24,13 +25,18 @@
 ;; LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 ;; OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
-;;
-;; See https://github.com/knu/emacsc for the latest information.
+
+;; Author: Akinori MUSHA <knu@iDaemons.org>
+;; URL: https://github.com/knu/emacsc
+;; Created: 11 Apr 2012
+;; Version: 1.0.20130814
+;; Keywords: tools
 
 ;;; Commentary:
 
 ;;; Code:
 
+;;;###autoload
 (eval-after-load "server"
   '(defadvice server-eval-and-print
      (before suppress-output (expr proc) activate)
