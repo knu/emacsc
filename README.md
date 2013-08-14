@@ -26,10 +26,22 @@ terminal, making the command itself suitable as a value for EDITOR.
 A byte-compiled initialization file is automatically removed before
 running Emacs if outdated, i.e. older than the original file.
 
-In order for -x and -f to work, install lisp/emacsc.el into a
-directory in your load-path and add this to your ~/.emacs.d/init.el.
+In order for the -x and -f options, and the following commands to
+work, install lisp/emacsc.el into a directory in your load-path and
+add this to your ~/.emacs.d/init.el:
 
     (require 'emacsc)
+
+Or install emacsc from an ELPA package and you are good to go.
+
+## dired(1)
+
+Dired(1) is a frontend command to invoke dired.
+
+usage: dired [direcotry]
+
+Run dired on a given directory.  If omitted, ask where with the
+current directory as default.
 
 ## ediff(1), ediff-merge(1)
 
@@ -43,7 +55,8 @@ usage: ediff-merge local remote base merged
 
 These commands depend on emacsc(1) and ediff-batch.el.  Put the
 following line in your Emacs initialization file in addition to the
-one above for emacsc.
+one above for emacsc if you do not install emacsc from an ELPA
+package:
 
     (require 'ediff-batch)
 
@@ -66,11 +79,6 @@ usage: magit [direcotry]
 
 Run magit-status on a given directory.  If omitted, ask where with the
 current directory as default.
-
-This command depends on emacsc(1).  Put the following lines in your
-Emacs initialization file.
-
-    (require 'emacsc)
 
 ## SEE ALSO
 
