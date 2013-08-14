@@ -29,6 +29,8 @@
 #
 # See https://github.com/knu/emacsc for the latest information.
 
+use strict;
+use warnings;
 use Cwd qw(abs_path getcwd);
 use File::Basename;
 use Getopt::Long;
@@ -82,9 +84,9 @@ sub main {
 sub check_dir {
     my($dir) = @_;
 
-    -d $dir and return abs_path($file);
+    -d $dir and return abs_path($dir);
 
-    die sprintf("%s: %s\n", $file, $! || 'Not a directory');
+    die sprintf("%s: %s\n", $dir, $! || 'Not a directory');
 }
 
 sub elisp_escape {
