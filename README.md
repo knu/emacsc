@@ -6,11 +6,19 @@ Emacsc(1) is a wrapper of emacsclient(1) for use within a terminal,
 which helps use Emacs more as command line tool than just a standalone
 environment.
 
-    usage: emacsc [-dk] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
+    usage: emacsc [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
 
         -h, --help      show this help
         -d, --daemon    run Emacs as daemon and quit
         -k, --kill      kill Emacs daemon
+        -g, --no-tty    do not prefer tty
+        -c, --create-frame
+                        create a new frame
+        -n, --no-wait
+                        do not wait and return immediately
+        -s, --socket-name=NAME
+                        specify the file name of the socket file name for
+                        communication
         -e, --eval=EXPR
                         evaluate the Lisp expression EXPR and print the
                         result without a frame opened
