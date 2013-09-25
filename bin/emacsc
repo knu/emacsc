@@ -29,8 +29,12 @@
 #
 # See https://github.com/knu/emacsc for the latest information.
 
+VERSION=1.1.20130925
+
 usage () {
     cat <<EOF >&2
+emacsc version $VERSION
+
 usage: $(basename "$0") [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
 
     -h, --help      show this help
@@ -51,6 +55,8 @@ usage: $(basename "$0") [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [FILE..
                     interactively execute the Lisp expression EXPR
     -f, --funcall=FUNC
                     interactively call the Lisp function FUNC
+    --version
+                    show version number and exit
 
 Default options can be put in the environment variable EMACSCOPT.
 
@@ -128,6 +134,10 @@ while getopts cdgkns:e:x:f:h-: opt; do
             ;;
         h|help)
             usage
+            exit
+            ;;
+        version)
+            echo "emacsc version $VERSION"
             exit
             ;;
         ??*)
