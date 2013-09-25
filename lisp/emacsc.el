@@ -29,7 +29,7 @@
 ;; Author: Akinori MUSHA <knu@iDaemons.org>
 ;; URL: https://github.com/knu/emacsc
 ;; Created: 11 Apr 2012
-;; Version: 1.0.20130814.1
+;; Version: 1.1.20130925
 ;; Keywords: tools
 
 ;;; Commentary:
@@ -49,7 +49,7 @@
 ;;;###autoload
 (eval-after-load "server"
   '(defadvice server-eval-and-print
-     (before suppress-output (expr proc) activate)
+     (before emacsc-suppress-output (expr proc) activate)
      (when (string-prefix-p "@" expr)
        (ad-set-arg 0 (substring expr 1))
        (ad-set-arg 1 nil))))
