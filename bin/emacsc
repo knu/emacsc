@@ -71,7 +71,7 @@ EOF
 : ${ALTERNATE_EDITOR=}
 export ALTERNATE_EDITOR
 
-unset expr func quiet void args
+unset expr func quiet void args ec_args
 tty=t
 
 if [ -n "${EMACSCOPT+t}" ]; then
@@ -124,7 +124,7 @@ while getopts cdgkns:e:x:f:h-: opt; do
             args="$args -n"
             ;;
         s|socket-name)
-            args="$args -s $OPTARG"
+            ec_args="$ec_args -s $OPTARG"
             ;;
         h|help)
             usage
@@ -163,11 +163,13 @@ if [ -n "${args+t}" ]; then
     set -- $args "$@"
 fi
 
+ec="emacsclient $ec_args"
+
 if [ -n "${quiet+t}" ]; then
-    exec emacsclient "$@" >/dev/null 2>&1
+    exec $ec "$@" >/dev/null 2>&1
 fi
 
-case `emacsclient -e window-system` in
+case `$ec -e window-system` in
     mac|w32) unset tty ;;
 esac
 
@@ -175,7 +177,7 @@ if [ -n "${tty+t}" ]; then
     : ${TTY:=`tty 2>/dev/null`}
     : ${TTY:=/dev/tty}
     # emacsclient(1) calls ttyname() on stdout
-    exec emacsclient -t "$@" >$TTY
+    exec $ec -t "$@" >$TTY
 else
-    exec emacsclient "$@"
+    exec $ec "$@"
 fi
