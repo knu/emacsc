@@ -77,7 +77,7 @@ EOF
 : ${ALTERNATE_EDITOR=}
 export ALTERNATE_EDITOR
 
-unset expr func quiet void args ec_args
+unset expr func quiet interactive void args ec_args
 tty=t
 
 if [ -n "${EMACSCOPT+t}" ]; then
@@ -114,10 +114,12 @@ while getopts cdgkns:e:x:f:h-: opt; do
             ;;
         x|execute)
             func="(lambda () (interactive) $OPTARG))"
+            interactive=t
             void=t
             ;;
         f|funcall)
             func="$OPTARG"
+            interactive=t
             void=t
             ;;
         c|create-frame)
@@ -154,6 +156,10 @@ done
 
 shift $((OPTIND-1))
 
+if [ $# -gt 0 ]; then
+    interactive=t
+fi
+
 for el in "$HOME"/.emacs.d/init.el "$HOME"/.emacs.el  "$HOME"/.emacs; do
     if [ -f "$el" ]; then
         [ "$el" -nt "${el%.el}.elc" ] && rm -f "${el%.el}.elc"
@@ -189,5 +195,8 @@ if [ -n "${tty+t}" ]; then
     # emacsclient(1) calls ttyname() on stdout
     exec $ec -t "$@" >$TTY
 else
+    if [ -n "$interactive" ]; then
+        set -- -c "$@"
+    fi
     exec $ec "$@"
 fi
