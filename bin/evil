@@ -1,0 +1,104 @@
+#!/usr/bin/perl
+#
+# evil(1) - edit given files in evil-local-mode
+#
+# Copyright (c) 2013 Akinori MUSHA
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# See https://github.com/knu/emacsc for the latest information.
+
+use strict;
+use warnings;
+use Cwd qw(abs_path getcwd);
+use File::Basename;
+use Getopt::Long;
+
+main();
+
+sub usage {
+    my $name = basename($0);
+
+    print STDERR <<"EOF";
+usage: $name [-s NAME] FILE..
+
+    -h, --help      show this help
+    -s, --socket-name=NAME
+                    specify the file name of the socket file name for
+                    communication
+
+Evil given files in evil-local-mode.
+
+This command depends on emacsc(1).  Put the following lines in your
+Emacs initialization file.
+
+    (require 'emacsc)
+EOF
+}
+
+sub main {
+    my $opt_s;
+    GetOptions("h|help" => sub { usage; exit },
+               "s|socket-name=s" => \$opt_s) or exit 64;
+
+    if (1 < @ARGV) {
+        usage;
+        exit 64;
+    }
+
+    my @emacsc = qw(emacsc);
+
+    if ($opt_s) {
+        push @emacsc, '-s', $opt_s;
+    }
+
+    eval {
+        if (@ARGV) {
+            system @emacsc, '-e', <<'EOS';
+(progn
+  (autoload 'evil-local-mode "evil" "evil-local-mode" t)
+
+  (defadvice server-visit-files
+    (around evil-mode activate)
+    (if (null files)
+        ad-do-it
+      (unwind-protect
+          (progn
+            (add-hook 'server-visit-hook 'evil-local-mode)
+            ad-do-it)
+        (remove-hook 'server-visit-hook 'evil-local-mode)
+        (ad-remove-advice 'server-visit-files 'around 'evil-mode)
+        (ad-activate 'server-visit-files)))))
+EOS
+            system @emacsc, @ARGV;
+        } else {
+            print STDERR basename($0), ": no file is given";
+            exit 1;
+        }
+    };
+    if ($@) {
+        print STDERR basename($0), ": ", $@;
+        exit 1;
+    }
+}
