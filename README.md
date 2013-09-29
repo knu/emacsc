@@ -79,6 +79,19 @@ To use them from Git, put the following lines in your ~/.gitconfig.
     [mergetool "ediff"]
         cmd = ediff-merge \"$LOCAL\" \"$REMOTE\" \"$BASE\" \"$MERGED\"
 
+## evil(1)
+
+Evil(1) is a command to edit given files in evil-local-mode.
+
+usage: evil [-s NAME] FILE..
+
+    -h, --help      show this help
+    -s, --socket-name=NAME
+                    specify the file name of the socket file name for
+                    communication
+
+Edit given files in evil-local-mode.
+
 ## magit(1)
 
 Magit(1) is a frontend command to invoke magit-status.
