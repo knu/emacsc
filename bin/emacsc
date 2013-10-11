@@ -47,7 +47,7 @@ usage: $(basename "$0") [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [FILE..
                     do not wait and return immediately
     -s, --socket-name=NAME
                     specify the file name of the socket file name for
-                    communication
+                    communication (default: \${EMACS_SERVER_NAME:-server})
     -e, --eval=EXPR
                     evaluate the Lisp expression EXPR and print the
                     result without a frame opened
@@ -79,6 +79,10 @@ export ALTERNATE_EDITOR
 
 unset expr func quiet interactive void args ec_args
 tty=t
+
+if [ -n "${EMACS_SERVER_NAME:+t}" ]; then
+    set -- -s "$EMACS_SERVER_NAME" "$@"
+fi
 
 if [ -n "${EMACSCOPT+t}" ]; then
     set -- $EMACSCOPT "$@"
