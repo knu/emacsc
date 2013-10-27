@@ -77,7 +77,7 @@ EOF
 : ${ALTERNATE_EDITOR=}
 export ALTERNATE_EDITOR
 
-unset expr func quiet interactive void args ec_args
+unset expr func create_frame quiet interactive void args ec_args
 tty=t
 
 if [ -n "${EMACS_SERVER_NAME:+t}" ]; then
@@ -127,7 +127,7 @@ while getopts cdgkns:e:x:f:h-: opt; do
             void=t
             ;;
         c|create-frame)
-            args="$args -c"
+            create_frame=t
             ;;
         g|no-tty)
             unset tty
@@ -183,24 +183,35 @@ if [ -n "${args+t}" ]; then
     set -- $args "$@"
 fi
 
+if [ -n "${interactive+t}" ]; then
+    create_frame=t
+fi
+
 ec="emacsclient $ec_args"
 
 if [ -n "${quiet+t}" ]; then
-    exec $ec "$@" >/dev/null 2>&1
+    exec >/dev/null 2>&1
+    unset tty create_frame
+else
+    case "$($ec -e window-system)" in
+        mac|w32)
+            unset tty
+            ;;
+        ''|nil)
+            if [ -n "${INSIDE_EMACS+t}" ]; then
+                unset tty create_frame
+            fi
+    esac
 fi
 
-case `$ec -e window-system` in
-    mac|w32) unset tty ;;
-esac
-
 if [ -n "${tty+t}" ]; then
+    set -- -t "$@"
     : ${TTY:=`tty 2>/dev/null`}
     : ${TTY:=/dev/tty}
     # emacsclient(1) calls ttyname() on stdout
-    exec $ec -t "$@" >$TTY
-else
-    if [ -n "$interactive" ]; then
-        set -- -c "$@"
-    fi
-    exec $ec "$@"
+    exec >$TTY
+elif [ -n "${create_frame+t}" ]; then
+    set -- -c "$@"
 fi
+
+exec $ec "$@"
