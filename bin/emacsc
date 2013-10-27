@@ -194,7 +194,7 @@ if [ -n "${quiet+t}" ]; then
     unset tty create_frame
 else
     case "$($ec -e window-system)" in
-        mac|w32)
+        mac|ns|w32)
             unset tty
             ;;
         ''|nil)
