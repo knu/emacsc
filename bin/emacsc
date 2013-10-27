@@ -29,7 +29,7 @@
 #
 # See https://github.com/knu/emacsc for the latest information.
 
-VERSION=1.1.20130930
+VERSION=1.2.20131027
 
 usage () {
     cat <<EOF >&2
