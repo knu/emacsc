@@ -62,15 +62,31 @@ sub main {
 
     eval {
         if (@ARGV) {
-            my $dir = check_dir($ARGV[0]);
-            exec qw(emacsc -x),
-                sprintf(q{(dired "%s")},
-                        elisp_escape($dir));
+            my($dir, $file) = parse_filename($ARGV[0]);
+            emacsc(<<'ELISP', $dir, $file);
+(let* ((dir "%s")
+       (filename "%s")
+       (buffer (dired dir))
+       (pos (with-current-buffer buffer
+              (goto-char (point-min))
+              (dired-next-line 1)
+              (while (and (not (eobp))
+                          (or (dired-between-files)
+                              (not (string= (file-name-nondirectory (dired-get-filename nil t))
+                                            filename))))
+                (dired-next-line 1)))))
+  (switch-to-buffer buffer)
+  ;; force redisplay of hl-line-mode
+  (if (bound-and-true-p hl-line-mode)
+    (hl-line-highlight)))
+ELISP
         } else {
             my $dir = getcwd();
-            exec qw(emacsc -x),
-                sprintf(q{(let ((current-prefix-arg '(4)) (default-directory "%s")) (call-interactively 'dired))},
-                        elisp_escape($dir));
+            emacsc(<<'ELISP', $dir);
+(let ((current-prefix-arg '(4))
+      (default-directory "%s"))
+  (call-interactively 'dired))
+ELISP
         }
     };
     if ($@) {
@@ -79,16 +95,29 @@ sub main {
     }
 }
 
-sub check_dir {
-    my($dir) = @_;
+sub parse_filename {
+    my($file) = @_;
 
-    -d $dir and return abs_path($dir);
+    $abs = abs_path($file);
 
-    die sprintf("%s: %s\n", $dir, $! || 'Not a directory');
+    if (-d $abs) {
+        return ($abs, '..');
+    } elsif (-e _ || -l $abs) {
+        return (dirname($abs), basename($abs));
+    } else {
+        die sprintf("%s: %s\n", $file, $! || 'No such file or directory');
+    }
 }
 
 sub elisp_escape {
     (local $_) = @_;
     s/[\\"]/\\$1/;
     $_;
+}
+
+sub emacsc {
+    my($elisp, @args) = @_;
+    $elisp =~ s/;;.*$//mg;
+    $elisp =~ s/\s+(?=\s|\z)//g;
+    exec qw(emacsc -x), sprintf($elisp, map elisp_escape($_), @args);
 }
