@@ -46,20 +46,24 @@ Or install emacsc from an ELPA package and you are good to go.
 
 Dired(1) is a frontend command to invoke dired.
 
-usage: dired [direcotry]
+    usage: dired [directory|file]
 
-Run dired on a given directory.  If omitted, ask where with the
-current directory as default.
+If a directory is given, it is opened with dired.  If a non-directory
+file is given, its containing directory is opened with dired and the
+point is moved to the file.
+
+If omitted, dired asks where to visit, with the current directory as
+default.
 
 ## ediff(1), ediff-merge(1)
 
 Ediff(1) and ediff-merge(1) are frontend commands to invoke ediff
 functions.
 
-usage: ediff file1 file2
+    usage: ediff file1 file2
 
-usage: ediff-merge local remote base merged
-       ediff-merge local remote merged
+    usage: ediff-merge local remote base merged
+           ediff-merge local remote merged
 
 These commands depend on emacsc(1) and ediff-batch.el.  Put the
 following line in your Emacs initialization file in addition to the
@@ -83,23 +87,21 @@ To use them from Git, put the following lines in your ~/.gitconfig.
 
 Evil(1) is a command to edit given files in evil-local-mode.
 
-usage: evil [-s NAME] FILE..
+    usage: evil [-s NAME] FILE..
 
-    -h, --help      show this help
-    -s, --socket-name=NAME
-                    specify the file name of the socket file name for
-                    communication
-
-Edit given files in evil-local-mode.
+        -h, --help      show this help
+        -s, --socket-name=NAME
+                        specify the file name of the socket file name for
+                        communication
 
 ## magit(1)
 
 Magit(1) is a frontend command to invoke magit-status.
 
-usage: magit [direcotry]
+    usage: magit [directory]
 
-Run magit-status on a given directory.  If omitted, ask where with the
-current directory as default.
+It runs magit-status on a given directory.  If omitted, ask where with
+the current directory as default.
 
 ## SEE ALSO
 
