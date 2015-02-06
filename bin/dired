@@ -2,7 +2,7 @@
 #
 # dired(1) - a frontend command for dired
 #
-# Copyright (c) 2013 Akinori MUSHA
+# Copyright (c) 2013-2015 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -39,10 +39,11 @@ sub usage {
     my $name = basename($0);
 
     print STDERR <<EOF;
-usage: $name [directory]
+usage: $name [directory|file]
 
-Run dired on a given directory.  If omitted, ask where with the
-current directory as default.
+Open a given directory or a file name with dired, defaulted to the
+current directory.  If a non-directory is given, the point will be
+automatically moved to the file on startup.
 
 This command depends on emacsc(1).  Put the following lines in your
 Emacs initialization file.
@@ -61,9 +62,8 @@ sub main {
     }
 
     eval {
-        if (@ARGV) {
-            my($dir, $file) = parse_filename($ARGV[0]);
-            emacsc(<<'ELISP', $dir, $file);
+        my($dir, $file) = parse_filename(@ARGV ? $ARGV[0] : getcwd());
+        emacsc(<<'ELISP', $dir, $file);
 (let* ((dir "%s")
        (filename "%s")
        (buffer (dired dir))
@@ -80,14 +80,6 @@ sub main {
   (if (bound-and-true-p hl-line-mode)
     (hl-line-highlight)))
 ELISP
-        } else {
-            my $dir = getcwd();
-            emacsc(<<'ELISP', $dir);
-(let ((current-prefix-arg '(4))
-      (default-directory "%s"))
-  (call-interactively 'dired))
-ELISP
-        }
     };
     if ($@) {
         print STDERR basename($0), ": ", $@;

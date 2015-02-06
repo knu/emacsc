@@ -48,12 +48,9 @@ Dired(1) is a frontend command to invoke dired.
 
     usage: dired [directory|file]
 
-If a directory is given, it is opened with dired.  If a non-directory
-file is given, its containing directory is opened with dired and the
-point is moved to the file.
-
-If omitted, dired asks where to visit, with the current directory as
-default.
+It takes a directory or a file name, defaulted to the current
+directory, to open with dired.  If a non-directory is given, the point
+will be automatically moved to the file on startup.
 
 ## ediff(1), ediff-merge(1)
 
