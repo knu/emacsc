@@ -2,7 +2,7 @@
 #
 # emacsc(1) - a wrapper of emacsclient(1)
 #
-# Copyright (c) 2012, 2013 Akinori MUSHA
+# Copyright (c) 2012-2015 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -206,10 +206,12 @@ fi
 
 if [ -n "${tty+t}" ]; then
     set -- -t "$@"
-    : ${TTY:=`tty 2>/dev/null`}
-    : ${TTY:=/dev/tty}
     # emacsclient(1) calls ttyname() on stdout
-    exec >$TTY
+    if [ ! -t 1 ]; then
+        : ${TTY:=`tty 2>/dev/null`}
+        : ${TTY:=/dev/tty}
+        exec >$TTY
+    fi
 elif [ -n "${create_frame+t}" ]; then
     set -- -c "$@"
 fi
