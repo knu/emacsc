@@ -1,4 +1,3 @@
-
 ;;; ediff-batch.el --- helper for ediff(1) and ediff-merge(1)
 ;;
 ;; Copyright (c) 2012, 2013 Akinori MUSHA

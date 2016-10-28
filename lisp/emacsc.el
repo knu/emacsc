@@ -1,4 +1,3 @@
-
 ;;; emacsc.el --- helper for emacsc(1)
 ;;
 ;; Copyright (c) 2012, 2013 Akinori MUSHA
