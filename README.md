@@ -6,7 +6,7 @@ Emacsc(1) is a wrapper of emacsclient(1) for use within a terminal,
 which helps use Emacs more as command line tool than just a standalone
 environment.
 
-    usage: emacsc [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
+    usage: emacsc [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C DIR] [FILE..]
 
         -h, --help      show this help
         -d, --daemon    run Emacs as daemon and quit
@@ -26,6 +26,8 @@ environment.
                         interactively execute the Lisp expression EXPR
         -f, --funcall=FUNC
                         interactively call the Lisp function FUNC
+        -C, --chdir, --directory=DIR
+                        change to directory DIR before running code
 
 This command is a wrapper of emacsclient for use within a terminal.
 It adds the -t option so that Emacs opens a new frame on the current

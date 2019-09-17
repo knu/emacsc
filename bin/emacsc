@@ -35,7 +35,7 @@ usage () {
     cat <<EOF >&2
 emacsc version $VERSION
 
-usage: $(basename "$0") [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [FILE..]
+usage: $(basename "$0") [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C DIR] [FILE..]
 
     -h, --help      show this help
     -d, --daemon    run Emacs as daemon and quit
@@ -55,6 +55,8 @@ usage: $(basename "$0") [-cdgkn] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [FILE..
                     interactively execute the Lisp expression EXPR
     -f, --funcall=FUNC
                     interactively call the Lisp function FUNC
+    -C, --chdir, --directory=DIR
+                    change to directory DIR before running code
     --version
                     show version number and exit
 
@@ -77,8 +79,9 @@ EOF
 : ${ALTERNATE_EDITOR=}
 export ALTERNATE_EDITOR
 
-unset expr func create_frame quiet interactive void args ec_args
+unset expr func create_frame quiet interactive void args ec_args dir
 tty=t
+dir=.
 
 if [ -n "${EMACS_SERVER_NAME:+t}" ]; then
     set -- -s "$EMACS_SERVER_NAME" "$@"
@@ -88,7 +91,7 @@ if [ -n "${EMACSCOPT+t}" ]; then
     set -- $EMACSCOPT "$@"
 fi
 
-while getopts cdgkns:e:x:f:h-: opt; do
+while getopts cdgkns:e:x:f:C:h-: opt; do
     if [ "$opt" = - ]; then
         case "$OPTARG" in
             *\=*)
@@ -125,6 +128,9 @@ while getopts cdgkns:e:x:f:h-: opt; do
             func="$OPTARG"
             interactive=t
             void=t
+            ;;
+        C|chdir|directory)
+            dir="$OPTARG"
             ;;
         c|create-frame)
             create_frame=t
@@ -175,8 +181,18 @@ if [ -n "${func+t}" ]; then
     expr="(call-interactively (function $func))"
 fi
 
+if [ -d "$dir" ]; then
+    dir=$(cd "$dir" && pwd)
+else
+    echo "$0: not a directory: $dir"
+    exit 1
+fi
+
 if [ -n "${expr+t}" ]; then
-    set -- -e "${void+@}$expr" "$@"
+    set -- -e "${void+@}(let ((default-directory \"$(sed 's/[\\"]/\\&/g' <<EOF
+$dir
+EOF
+    )\")) $expr)" "$@"
 fi
 
 if [ -n "${args+t}" ]; then
