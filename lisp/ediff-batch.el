@@ -37,101 +37,96 @@
 
 ;;; Code:
 
-;;;###autoload
-(eval-after-load "ediff"
-  '(progn
-     ; save and restore window configuration
-     (defvar ediff-batch-saved-window-configuration nil "Saved window configuration for ediff")
-     (defun ediff-batch-save-window-configuration ()
-       (setq ediff-batch-saved-window-configuration (current-window-configuration)))
-     (add-hook 'ediff-before-setup-hook 'ediff-batch-save-window-configuration)
-     (defun ediff-batch-restore-window-configuration ()
-       (set-window-configuration ediff-batch-saved-window-configuration))
-     (add-hook 'ediff-suspend-hook 'ediff-batch-restore-window-configuration t)
-     (add-hook 'ediff-quit-hook 'ediff-batch-restore-window-configuration t)
+(require 'ediff)
 
-     ; batch mode (for use from git mergetool etc.)
-     (ediff-defvar-local ediff-batch-in-batch-mode-p nil "True if in batch mode")
-     (ediff-defvar-local ediff-batch-close-on-quit nil "True if the buffer should be closed on quit.")
+;; save and restore window configuration
+(defvar ediff-batch-saved-window-configuration nil "Saved window configuration for ediff")
+(defun ediff-batch-save-window-configuration ()
+  (setq ediff-batch-saved-window-configuration (current-window-configuration)))
+(add-hook 'ediff-before-setup-hook 'ediff-batch-save-window-configuration)
+(defun ediff-batch-restore-window-configuration ()
+  (set-window-configuration ediff-batch-saved-window-configuration))
+(add-hook 'ediff-suspend-hook 'ediff-batch-restore-window-configuration t)
+(add-hook 'ediff-quit-hook 'ediff-batch-restore-window-configuration t)
 
-     (defun ediff-batch-batch-mode (&optional mode)
-       (let (ret)
-         (ediff-with-current-buffer ediff-buffer-A
-           (case mode
-             (set
-              (setq ret (setq ediff-batch-in-batch-mode-p t)))
-             (unset
-              (setq ret ediff-batch-in-batch-mode-p)
-              (setq ediff-batch-in-batch-mode-p nil))
-             (t
-              (setq ret ediff-batch-in-batch-mode-p))))
-         ret))
+;; batch mode (for use from git mergetool etc.)
+(ediff-defvar-local ediff-batch-in-batch-mode-p nil "True if in batch mode")
+(ediff-defvar-local ediff-batch-close-on-quit nil "True if the buffer should be closed on quit.")
 
-     (defadvice ediff-find-file (around
-                                 mark-newly-opened-buffers
-                                 (file-var buffer-name &optional last-dir hooks-var)
-                                 activate)
-       (let* ((file (symbol-value file-var))
-              (existing-p (and find-file-existing-other-name
-                               (find-buffer-visiting file))))
-         ad-do-it
-         (or existing-p
-             (ediff-with-current-buffer (symbol-value buffer-name)
-                                        (setq ediff-batch-close-on-quit t)))))
+(defun ediff-batch-batch-mode (&optional mode)
+  (let (ret)
+    (ediff-with-current-buffer ediff-buffer-A
+      (case mode
+        (set
+         (setq ret (setq ediff-batch-in-batch-mode-p t)))
+        (unset
+         (setq ret ediff-batch-in-batch-mode-p)
+         (setq ediff-batch-in-batch-mode-p nil))
+        (t
+         (setq ret ediff-batch-in-batch-mode-p))))
+    ret))
 
-     (defun ediff-batch-save-merge ()
-       (if (ediff-batch-batch-mode)
-           (let ((file ediff-merge-store-file))
-             (if file
-                 (ediff-with-current-buffer ediff-buffer-C
-                   (set-visited-file-name file t)
-                   (save-buffer))))
-         (ediff-maybe-save-and-delete-merge)))
+(defadvice ediff-find-file (around
+                            mark-newly-opened-buffers
+                            (file-var buffer-name &optional last-dir hooks-var)
+                            activate)
+  (let* ((file (symbol-value file-var))
+         (existing-p (and find-file-existing-other-name
+                          (find-buffer-visiting file))))
+    ad-do-it
+    (or existing-p
+        (ediff-with-current-buffer (symbol-value buffer-name)
+          (setq ediff-batch-close-on-quit t)))))
 
-     (remove-hook 'ediff-quit-merge-hook 'ediff-maybe-save-and-delete-merge)
-     (add-hook 'ediff-quit-merge-hook 'ediff-batch-save-merge)
+(defun ediff-batch-save-merge ()
+  (if (ediff-batch-batch-mode)
+      (let ((file ediff-merge-store-file))
+        (if file
+            (ediff-with-current-buffer ediff-buffer-C
+              (set-visited-file-name file t)
+              (save-buffer))))
+    (ediff-maybe-save-and-delete-merge)))
 
-     (defadvice ediff-cleanup-mess (around
-                                    support-batch-mode
-                                    ()
-                                    activate)
-       (let ((batch-p (ediff-batch-batch-mode 'unset))
-             (buffers (list ediff-buffer-A ediff-buffer-B ediff-ancestor-buffer))
-             (buffer-C ediff-buffer-C))
-         ad-do-it
-         (dolist (buffer buffers)
-           (ediff-with-current-buffer buffer
-             (and ediff-batch-close-on-quit (kill-buffer))))
-         (when batch-p
-           (ediff-kill-buffer-carefully buffer-C)
-           (delete-frame))))
+(remove-hook 'ediff-quit-merge-hook 'ediff-maybe-save-and-delete-merge)
+(add-hook 'ediff-quit-merge-hook 'ediff-batch-save-merge)
 
-     (defun ediff-files-in-batch-mode
-       (file-A file-B &optional startup-hooks)
-       (ediff-files
-        file-A file-B
-        (cons (function (lambda () (ediff-batch-batch-mode 'set))) startup-hooks)))
-
-     (defun ediff-merge-files-in-batch-mode
-       (file-A file-B &optional startup-hooks merge-buffer-file)
-       (ediff-merge-files
-        file-A file-B
-        (cons (function (lambda () (ediff-batch-batch-mode 'set))) startup-hooks)
-        merge-buffer-file))
-
-     (defun ediff-merge-files-with-ancestor-in-batch-mode
-       (file-A file-B file-ancestor &optional startup-hooks merge-buffer-file)
-       (ediff-merge-files-with-ancestor
-        file-A file-B file-ancestor
-        (cons (function (lambda () (ediff-batch-batch-mode 'set))) startup-hooks)
-        merge-buffer-file))))
+(defadvice ediff-cleanup-mess (around
+                               support-batch-mode
+                               ()
+                               activate)
+  (let ((batch-p (ediff-batch-batch-mode 'unset))
+        (buffers (list ediff-buffer-A ediff-buffer-B ediff-ancestor-buffer))
+        (buffer-C ediff-buffer-C))
+    ad-do-it
+    (dolist (buffer buffers)
+      (ediff-with-current-buffer buffer
+        (and ediff-batch-close-on-quit (kill-buffer))))
+    (when batch-p
+      (ediff-kill-buffer-carefully buffer-C)
+      (delete-frame))))
 
 ;;;###autoload
-(autoload 'ediff-files-in-batch-mode "ediff")
+(defun ediff-files-in-batch-mode
+    (file-A file-B &optional startup-hooks)
+  (ediff-files
+   file-A file-B
+   (cons (function (lambda () (ediff-batch-batch-mode 'set))) startup-hooks)))
+
 ;;;###autoload
-(autoload 'ediff-merge-files-in-batch-mode "ediff")
+(defun ediff-merge-files-in-batch-mode
+    (file-A file-B &optional startup-hooks merge-buffer-file)
+  (ediff-merge-files
+   file-A file-B
+   (cons (function (lambda () (ediff-batch-batch-mode 'set))) startup-hooks)
+   merge-buffer-file))
+
 ;;;###autoload
-(autoload 'ediff-merge-files-with-ancestor-in-batch-mode "ediff")
+(defun ediff-merge-files-with-ancestor-in-batch-mode
+    (file-A file-B file-ancestor &optional startup-hooks merge-buffer-file)
+  (ediff-merge-files-with-ancestor
+   file-A file-B file-ancestor
+   (cons (function (lambda () (ediff-batch-batch-mode 'set))) startup-hooks)
+   merge-buffer-file))
 
 (provide 'ediff-batch)
 
