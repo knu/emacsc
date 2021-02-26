@@ -66,17 +66,29 @@
          (setq ret ediff-batch-in-batch-mode-p))))
     ret))
 
-(defadvice ediff-find-file (around
-                            mark-newly-opened-buffers
-                            (file-var buffer-name &optional last-dir hooks-var)
-                            activate)
-  (let* ((file (symbol-value file-var))
-         (existing-p (and find-file-existing-other-name
-                          (find-buffer-visiting file))))
-    ad-do-it
-    (or existing-p
-        (ediff-with-current-buffer (symbol-value buffer-name)
-          (setq ediff-batch-close-on-quit t)))))
+(if (fboundp 'ediff--buffer-file-name)
+    ;; New API from Emacs 27.1
+    (defadvice ediff-find-file (around
+                                mark-newly-opened-buffers
+                                (file &optional last-dir)
+                                activate)
+      (let* ((existing-p (and find-file-existing-other-name
+                              (find-buffer-visiting file))))
+        ad-do-it
+        (or existing-p
+            (ediff-with-current-buffer ad-return-value
+              (setq ediff-batch-close-on-quit t)))))
+  (defadvice ediff-find-file (around
+                              mark-newly-opened-buffers
+                              (file-var buffer-name &optional last-dir hooks-var)
+                              activate)
+    (let* ((file (symbol-value file-var))
+           (existing-p (and find-file-existing-other-name
+                            (find-buffer-visiting file))))
+      ad-do-it
+      (or existing-p
+          (ediff-with-current-buffer (symbol-value buffer-name)
+            (setq ediff-batch-close-on-quit t))))))
 
 (defun ediff-batch-save-merge ()
   (if (ediff-batch-batch-mode)
