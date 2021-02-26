@@ -30,7 +30,7 @@
 ;; Author: Akinori MUSHA <knu@iDaemons.org>
 ;; URL: https://github.com/knu/emacsc
 ;; Created: 23 Jul 2012
-;; Version: 1.1.20130925
+;; Version: 1.3.20210226
 ;; Keywords: tools
 
 ;;; Commentary:
