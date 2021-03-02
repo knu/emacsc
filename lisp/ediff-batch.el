@@ -56,10 +56,10 @@
 (defun ediff-batch-batch-mode (&optional mode)
   (let (ret)
     (ediff-with-current-buffer ediff-buffer-A
-      (case mode
-        (set
+      (cond
+        ((eq mode 'set)
          (setq ret (setq ediff-batch-in-batch-mode-p t)))
-        (unset
+        ((eq mode 'unset)
          (setq ret ediff-batch-in-batch-mode-p)
          (setq ediff-batch-in-batch-mode-p nil))
         (t
