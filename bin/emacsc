@@ -189,10 +189,18 @@ else
 fi
 
 if [ -n "${expr+t}" ]; then
-    set -- -e "${void+@}(let ((default-directory \"$(sed 's/[\\"]/\\&/g' <<EOF
+    qdir="$(sed 's/[\\"]/\\&/g' <<EOF
 $dir
 EOF
-    )\")) $expr)" "$@"
+    )"
+    set -- -e "${void+@}\
+(let*\
+ ((default-directory \"$qdir\")\
+  (inhibit-quit t)\
+  (val))\
+ (or (with-local-quit (setq val $expr) t)\
+     (setq quit-flag nil))\
+ val)" "$@"
 fi
 
 if [ -n "${args+t}" ]; then
