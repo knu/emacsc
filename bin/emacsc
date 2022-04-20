@@ -2,7 +2,7 @@
 #
 # emacsc(1) - a wrapper of emacsclient(1)
 #
-# Copyright (c) 2012-2019 Akinori MUSHA
+# Copyright (c) 2012-2022 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -29,7 +29,7 @@
 #
 # See https://github.com/knu/emacsc for the latest information.
 
-VERSION=1.3.20210302
+VERSION=1.4.20220420
 
 usage () {
     cat <<EOF >&2
