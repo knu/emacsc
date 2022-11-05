@@ -2,7 +2,7 @@
 #
 # dired(1) - a frontend command for dired
 #
-# Copyright (c) 2013-2015 Akinori MUSHA
+# Copyright (c) 2013-2022 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -53,8 +53,11 @@ EOF
 }
 
 sub main {
-    my $opt_h;
-    GetOptions("h|help" => sub { usage; exit }) or exit 64;
+    my @options;
+    GetOptions(
+        "h|help" => sub { usage; exit },
+        "n|no-wait" => sub { push(@options, "-n") },
+    ) or exit 64;
 
     if (1 < @ARGV) {
         usage;
@@ -63,7 +66,7 @@ sub main {
 
     eval {
         my($dir, $file) = parse_filename(@ARGV ? $ARGV[0] : getcwd());
-        emacsc(<<'ELISP', $dir, $file);
+        my $elisp = elisp_format(<<'ELISP', $dir, $file);
 (let* ((dir "%s")
        (filename "%s")
        (buffer (dired dir))
@@ -80,6 +83,7 @@ sub main {
   (if (bound-and-true-p hl-line-mode)
     (hl-line-highlight)))
 ELISP
+        exec qw(emacsc -x), $elisp, @options;
     };
     if ($@) {
         print STDERR basename($0), ": ", $@;
@@ -107,9 +111,9 @@ sub elisp_escape {
     $_;
 }
 
-sub emacsc {
+sub elisp_format {
     my($elisp, @args) = @_;
     $elisp =~ s/;;.*$//mg;
     $elisp =~ s/\s+(?=\s|\z)//g;
-    exec qw(emacsc -x), sprintf($elisp, map elisp_escape($_), @args);
+    sprintf($elisp, map elisp_escape($_), @args);
 }

@@ -48,7 +48,9 @@ Or install emacsc from an ELPA package and you are good to go.
 
 Dired(1) is a frontend command to invoke dired.
 
-    usage: dired [directory|file]
+    usage: dired [-n] [directory|file]
+
+        -n, --no-wait   do not wait and return immediately
 
 It takes a directory or a file name, defaulted to the current
 directory, to open with dired.  If a non-directory is given, the point
