@@ -66,14 +66,8 @@ functions.
     usage: ediff-merge local remote base merged
            ediff-merge local remote merged
 
-These commands depend on emacsc(1) and ediff-batch.el.  Put the
-following line in your Emacs initialization file in addition to the
-one above for emacsc if you do not install emacsc from an ELPA
-package:
-
-    (require 'ediff-batch)
-
-To use them from Git, put the following lines in your ~/.gitconfig.
+To use them from Git, put the following lines in your
+~/.config/git/config (or ~/.gitconfig).
 
     [diff]
         tool = ediff
@@ -83,6 +77,7 @@ To use them from Git, put the following lines in your ~/.gitconfig.
         tool = ediff
     [mergetool "ediff"]
         cmd = ediff-merge \"$LOCAL\" \"$REMOTE\" \"$BASE\" \"$MERGED\"
+        trustExitCode = true
 
 ## evil(1)
 
@@ -110,7 +105,7 @@ the current directory as default.
 
 ## AUTHOR
 
-Copyright (c) 2012-2019 Akinori MUSHA.
+Copyright (c) 2012-2023 Akinori MUSHA.
 
 Licensed under the 2-clause BSD license.  See `LICENSE.txt` for
 details.

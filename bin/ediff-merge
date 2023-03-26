@@ -2,7 +2,7 @@
 #
 # ediff-merge(1) - a frontend command for ediff-merge
 #
-# Copyright (c) 2012, 2013 Akinori MUSHA
+# Copyright (c) 2012, 2023 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -42,11 +42,15 @@ sub main {
 usage: $name local remote base merged
        $name local remote merged
 
-This command depends on emacsc(1) and ediff-batch.el.  Put the
-following lines in your Emacs initialization file.
+This command depends on emacsc(1).  Make sure you require emacsc in
+your Emacs initialization file, and put the following lines in your
+~/.config/git/config (or ~/.gitconfig).
 
-    (require 'emacsc)
-    (require 'ediff-batch)
+[merge]
+	tool = ediff
+[mergetool "ediff"]
+	cmd = ediff-merge \\"\$LOCAL\\" \\"\$REMOTE\\" \\"\$BASE\" \\"\$MERGED\\"
+	trustExitCode = true
 EOF
         exit 64;
     }
@@ -56,18 +60,21 @@ EOF
     }
 
     my $format;
-    if (@ARGV == 3) {
-        $format = '(ediff-merge-files-in-batch-mode "%s" "%s" nil "%s")';
+    if (@ARGV == 4) {
+        $format = '(ediff-merge-files-with-ancestor "%s" "%s" "%s" nil "%s")';
+    } elsif ($ARGV[1] eq $ARGV[2]) {
+        $format = '(ediff "%s" "%s")';
     } else {
-        $format = '(ediff-merge-files-with-ancestor-in-batch-mode "%s" "%s" "%s" nil "%s")';
+        $format = '(ediff-merge-files "%s" "%s" nil "%s")';
     }
 
     eval {
         my $merged = abs_path(pop @ARGV);
         my @files = map { check_file($_) } @ARGV;
-        exec qw(emacsc -x),
+        system qw(emacsc -x),
             sprintf($format,
                     map { elisp_escape($_) } (@files, $merged));
+        exec qw(git diff --check), $merged;
     };
     if ($@) {
         print STDERR $name, ": ", $@;

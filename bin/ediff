@@ -2,7 +2,7 @@
 #
 # ediff(1) - a frontend command for ediff
 #
-# Copyright (c) 2012, 2013 Akinori MUSHA
+# Copyright (c) 2012, 2023 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -45,11 +45,14 @@ sub main {
         print STDERR <<EOF;
 usage: $name file1 file2
 
-This command depends on emacsc(1) and ediff-batch.el.  Put the
-following lines in your Emacs initialization file.
+This command depends on emacsc(1)  Make sure you require emacsc in
+your Emacs initialization file, and put the following lines in your
+~/.config/git/config (or ~/.gitconfig).
 
-    (require 'emacsc)
-    (require 'ediff-batch)
+[diff]
+	tool = ediff
+[difftool "ediff"]
+	cmd = ediff \\"\$LOCAL\\" \\"\$REMOTE\\"
 EOF
         exit 64;
     }
@@ -57,7 +60,7 @@ EOF
     eval {
         my @files = map { check_file($_) } @ARGV;
         exec qw(emacsc -x),
-            sprintf(q{(ediff-files-in-batch-mode "%s" "%s")},
+            sprintf(q{(ediff-files "%s" "%s")},
                     map { elisp_escape($_) } @files);
     };
     if ($@) {
