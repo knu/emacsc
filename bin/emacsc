@@ -2,7 +2,7 @@
 #
 # emacsc(1) - a wrapper of emacsclient(1)
 #
-# Copyright (c) 2012-2022 Akinori MUSHA
+# Copyright (c) 2012-2024 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -218,7 +218,7 @@ if [ -n "${quiet+t}" ]; then
     unset tty create_frame
 else
     case "$($ec -e window-system)" in
-        mac|ns|w32)
+        w32)
             unset tty
             ;;
         ''|nil)
