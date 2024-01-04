@@ -225,6 +225,11 @@ else
             if [ -n "${INSIDE_EMACS+t}" ]; then
                 unset tty create_frame
             fi
+            ;;
+        *)
+            if [ -n "${INSIDE_EMACS+t}" ]; then
+                unset tty
+            fi
     esac
 fi
 
