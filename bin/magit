@@ -40,11 +40,14 @@ main();
 sub usage {
     my $name = basename($0);
 
-    print STDERR <<EOF;
-usage: $name [directory]
+    print STDERR <<"EOF";
+usage: $name [--log] [directory]
+
+    -h, --help      show this help
+    -l, --log       show `magit-log-all-branches` instead of status
 
 Run magit-status on a given directory.  If omitted, ask where with the
-current directory as default.
+current directory as default. If `--log` is specified, show the log instead.
 
 This command depends on emacsc(1).  Put the following lines in your
 Emacs initialization file.
@@ -55,13 +58,23 @@ EOF
 
 sub main {
     my $opt_h;
-    GetOptions("h|help" => sub { usage; exit }) or exit 64;
+    my $opt_l;
+    my $magit_command;
+    
+    GetOptions("h|help" => sub { usage; exit },
+               "l|log" => \$opt_l) or exit 64;
 
     if (1 < @ARGV) {
         usage;
         exit 64;
     }
 
+    if ($opt_l) {
+        $magit_command = "magit-log-all-branches";
+    } else {
+        $magit_command = "magit-status"
+    }
+    
     eval {
         if (@ARGV) {
             my $dir = check_dir($ARGV[0]);
@@ -71,8 +84,8 @@ sub main {
         } else {
             my $dir = getcwd();
             exec qw(emacsc -x),
-                sprintf(q{(let ((current-prefix-arg '(4)) (default-directory "%s")) (call-interactively 'magit-status))},
-                        elisp_escape($dir));
+                sprintf(q{(let ((current-prefix-arg '(4)) (default-directory "%s")) (call-interactively '%s))},
+                        elisp_escape($dir), elisp_escape($magit_command));
         }
     };
     if ($@) {
