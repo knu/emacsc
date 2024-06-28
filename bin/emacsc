@@ -29,7 +29,7 @@
 #
 # See https://github.com/knu/emacsc for the latest information.
 
-VERSION=1.4.20220420
+VERSION=1.5.20240628
 
 usage () {
     cat <<EOF >&2
@@ -178,7 +178,10 @@ for el in "$HOME"/.emacs.d/init.el "$HOME"/.emacs.el  "$HOME"/.emacs; do
 done
 
 if [ -n "${func+t}" ]; then
-    expr="(call-interactively (function $func))"
+    # Calling a function via call-interactively sometimes crashes the
+    # session and makes minibuffer unusable, so avoid using it if
+    # possible.
+    expr="(if (zerop (car (func-arity '$func))) ($func) (call-interactively '$func))"
 fi
 
 if [ -d "$dir" ]; then

@@ -1,6 +1,6 @@
 ;;; emacsc.el --- helper for emacsc(1)
 ;;
-;; Copyright (c) 2012-2022 Akinori MUSHA
+;; Copyright (c) 2012-2024 Akinori MUSHA
 ;;
 ;; All rights reserved.
 ;;
@@ -28,7 +28,7 @@
 ;; Author: Akinori MUSHA <knu@iDaemons.org>
 ;; URL: https://github.com/knu/emacsc
 ;; Created: 11 Apr 2012
-;; Version: 1.4.20220420
+;; Version: 1.5.20240628
 ;; Keywords: tools
 
 ;;; Commentary:
