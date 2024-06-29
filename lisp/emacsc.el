@@ -47,10 +47,11 @@
 
 ;;;###autoload
 (with-eval-after-load 'server
-  (cl-defun server-eval-and-print-Ad-emacsc-suppress-output ((expr proc))
-     (if (string-prefix-p "@" expr)
-         (list (substring expr 1) nil)
-       (list expr proc)))
+  (defun server-eval-and-print-Ad-emacsc-suppress-output (args)
+    (let ((expr (car args)))
+      (if (string-prefix-p "@" expr)
+          (list (substring expr 1) nil)
+        (cons expr (cdr args)))))
   (advice-add #'server-eval-and-print :filter-args #'server-eval-and-print-Ad-emacsc-suppress-output))
 
 (provide 'emacsc)
