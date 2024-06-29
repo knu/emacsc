@@ -46,12 +46,12 @@
 ;;; Code:
 
 ;;;###autoload
-(eval-after-load "server"
-  '(defadvice server-eval-and-print
-     (before emacsc-suppress-output (expr proc) activate)
-     (when (string-prefix-p "@" expr)
-       (ad-set-arg 0 (substring expr 1))
-       (ad-set-arg 1 nil))))
+(with-eval-after-load 'server
+  (cl-defun server-eval-and-print-Ad-emacsc-suppress-output ((expr proc))
+     (if (string-prefix-p "@" expr)
+         (list (substring expr 1) nil)
+       (list expr proc)))
+  (advice-add #'server-eval-and-print :filter-args #'server-eval-and-print-Ad-emacsc-suppress-output))
 
 (provide 'emacsc)
 
