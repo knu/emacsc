@@ -120,7 +120,7 @@ while getopts cdgkns:e:x:f:C:h-: opt; do
             unset tty
             ;;
         x|execute)
-            func="(lambda () (interactive) $OPTARG))"
+            expr="$OPTARG"
             interactive=t
             void=t
             ;;
@@ -181,7 +181,12 @@ if [ -n "${func+t}" ]; then
     # Calling a function via call-interactively sometimes crashes the
     # session and makes minibuffer unusable, so avoid using it if
     # possible.
-    expr="(if (zerop (car (func-arity '$func))) ($func) (call-interactively '$func))"
+    expr="\
+(let\
+ ((func (function $func)))\
+ (if (zerop (car (func-arity func)))\
+     (funcall func)\
+   (call-interactively func)))"
 fi
 
 if [ -d "$dir" ]; then
