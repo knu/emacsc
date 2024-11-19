@@ -28,7 +28,7 @@
 ;; Author: Akinori MUSHA <knu@iDaemons.org>
 ;; URL: https://github.com/knu/emacsc
 ;; Created: 11 Apr 2012
-;; Version: 1.5.20240629.1
+;; Version: 1.5.20241119
 ;; Keywords: tools
 
 ;;; Commentary:
