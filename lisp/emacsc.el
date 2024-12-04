@@ -28,7 +28,7 @@
 ;; Author: Akinori MUSHA <knu@iDaemons.org>
 ;; URL: https://github.com/knu/emacsc
 ;; Created: 11 Apr 2012
-;; Version: 1.5.20241119
+;; Version: 1.6.20241205
 ;; Keywords: tools
 
 ;;; Commentary:
@@ -45,6 +45,11 @@
 
 ;;; Code:
 
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'dired)
+  (require 'server))
+
 ;;;###autoload
 (with-eval-after-load 'server
   (defun server-eval-and-print-Ad-emacsc-suppress-output (args)
@@ -53,6 +58,52 @@
           (list (substring expr 1) nil)
         (cons expr (cdr args)))))
   (advice-add #'server-eval-and-print :filter-args #'server-eval-and-print-Ad-emacsc-suppress-output))
+
+;;;###autoload
+(defun dired-start (&optional file-or-files switches)
+  "Start a `dired' buffer with FILE-OR-FILES selected.  It can be a single file, directory or a list of files and directories.
+
+Optional second argument SWITCHES is passed through to `dired', which see."
+  (interactive)
+  (let ((files (if (stringp file-or-files)
+                   (list file-or-files)
+                 (or file-or-files (list default-directory)))))
+    (if (= (length files) 1)
+        (let* ((file (car files))
+               (file
+                (if file
+                    (expand-file-name file)
+                  default-directory))
+               (dirname
+                (if (file-directory-p file)
+                    file
+                  (file-name-directory file)))
+               (buffer (dired dirname switches)))
+          (with-current-buffer buffer
+            (dired-goto-file
+             (if (file-directory-p file)
+                 (concat (file-name-as-directory file) "..")
+               file)))
+          (switch-to-buffer buffer))
+      (let* ((files (mapcar #'expand-file-name files))
+             (root (file-name-directory (cl-reduce #'fill-common-string-prefix files)))
+             (buffer (dired root switches)))
+        (with-current-buffer buffer
+          (dolist (file files)
+            (let* ((rel (file-relative-name file root))
+                   (components (file-name-split rel))
+                   (dir root))
+              (dolist (component (butlast components))
+                (setq dir (expand-file-name component dir))
+                (and (file-directory-p dir)
+                     (dired-maybe-insert-subdir dir)))
+              (and (dired-goto-file file)
+                   (save-excursion (dired-mark 1))))))
+        (switch-to-buffer buffer)))
+    ;; force redisplay of hl-line-mode
+    (and (bound-and-true-p hl-line-mode)
+         (fboundp 'hl-line-highlight)
+         (hl-line-highlight))))
 
 (provide 'emacsc)
 

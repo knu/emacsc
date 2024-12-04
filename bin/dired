@@ -29,9 +29,8 @@
 #
 # See https://github.com/knu/emacsc for the latest information.
 
-use Cwd qw(abs_path getcwd);
+use Cwd qw(getcwd);
 use File::Basename;
-use File::Spec::Functions qw(catfile);
 use Getopt::Long;
 
 main();
@@ -60,24 +59,12 @@ sub main {
         "n|no-wait" => sub { push(@options, "-n") },
     ) or exit 64;
 
-    if (1 < @ARGV) {
-        usage;
-        exit 64;
-    }
-
     eval {
-        my($dir, $file) = parse_filename(@ARGV ? $ARGV[0] : getcwd());
-        my $elisp = elisp_format(<<'ELISP', $dir, $file);
-(let* ((dir "%s")
-       (file "%s")
-       (buffer (dired dir)))
-  (with-current-buffer buffer
-    (dired-goto-file file))
-  (switch-to-buffer buffer)
-  ;; force redisplay of hl-line-mode
-  (if (bound-and-true-p hl-line-mode)
-    (hl-line-highlight)))
-ELISP
+        my $cwd = getcwd();
+        my @files = @ARGV ? @ARGV : ($cwd);
+        my $qcwd = elisp_string($cwd);
+        my $qfiles = join(" ", map elisp_string($_), @files);
+        my $elisp = "(dired-start (mapcar (lambda (f) (expand-file-name f $qcwd)) '($qfiles)))";
         exec qw(emacsc -x), $elisp, @options;
     };
     if ($@) {
@@ -86,29 +73,8 @@ ELISP
     }
 }
 
-sub parse_filename {
-    my($file) = @_;
-
-    $abs = abs_path($file);
-
-    if (-d $abs) {
-        return ($abs, catfile($abs, ".."));
-    } elsif (-e _ || -l $abs) {
-        return (dirname($abs), $abs);
-    } else {
-        die sprintf("%s: %s\n", $file, $! || 'No such file or directory');
-    }
-}
-
-sub elisp_escape {
+sub elisp_string {
     (local $_) = @_;
     s/[\\"]/\\$1/;
-    $_;
-}
-
-sub elisp_format {
-    my($elisp, @args) = @_;
-    $elisp =~ s/;;.*$//mg;
-    $elisp =~ s/\s+(?=\s|\z)//g;
-    sprintf($elisp, map elisp_escape($_), @args);
+    qq{"$_"};
 }
