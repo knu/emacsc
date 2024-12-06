@@ -28,7 +28,7 @@
 ;; Author: Akinori MUSHA <knu@iDaemons.org>
 ;; URL: https://github.com/knu/emacsc
 ;; Created: 11 Apr 2012
-;; Version: 1.6.20241205
+;; Version: 1.6.20241206
 ;; Keywords: tools
 
 ;;; Commentary:
@@ -80,6 +80,7 @@ Optional second argument SWITCHES is passed through to `dired', which see."
                   (file-name-directory file)))
                (buffer (dired dirname switches)))
           (with-current-buffer buffer
+            (revert-buffer)
             (dired-goto-file
              (if (file-directory-p file)
                  (concat (file-name-as-directory file) "..")
@@ -89,6 +90,7 @@ Optional second argument SWITCHES is passed through to `dired', which see."
              (root (file-name-directory (cl-reduce #'fill-common-string-prefix files)))
              (buffer (dired root switches)))
         (with-current-buffer buffer
+          (revert-buffer)
           (dolist (file files)
             (let* ((rel (file-relative-name file root))
                    (components (file-name-split rel))
