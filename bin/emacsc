@@ -2,7 +2,7 @@
 #
 # emacsc(1) - a wrapper of emacsclient(1)
 #
-# Copyright (c) 2012-2025 Akinori MUSHA
+# Copyright (c) 2012-2026 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -29,13 +29,13 @@
 #
 # See https://github.com/knu/emacsc for the latest information.
 
-VERSION=1.5.20241119
+VERSION=1.6.20260125
 
 usage () {
     cat <<EOF >&2
 emacsc version $VERSION
 
-usage: $(basename "$0") [-cdgknp] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C DIR] [FILE..]
+usage: $(basename "$0") [-cdgknpw] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C DIR] [FILE..]
 
     -h, --help      show this help
     -d, --daemon    run Emacs as daemon and quit
@@ -45,6 +45,7 @@ usage: $(basename "$0") [-cdgknp] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C DI
                     create a new frame
     -n, --no-wait
                     do not wait and return immediately
+    -w, --wait      (no-op, for compatibility)
     -p, --print
                     print the evaluated result to stdout in string form
                     typically used with -e and -x
@@ -94,7 +95,7 @@ if [ -n "${EMACSCOPT+t}" ]; then
     set -- $EMACSCOPT "$@"
 fi
 
-while getopts cdgknps:e:x:f:C:h-: opt; do
+while getopts cdgknps:e:x:f:C:wh-: opt; do
     if [ "$opt" = - ]; then
         case "$OPTARG" in
             *\=*)
@@ -147,6 +148,9 @@ while getopts cdgknps:e:x:f:C:h-: opt; do
             ;;
         n|no-wait)
             args="$args -n"
+            ;;
+        w|wait)
+            # no-op for compatibility
             ;;
         s|socket-name)
             ec_args="$ec_args -s $OPTARG"
