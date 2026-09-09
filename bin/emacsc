@@ -214,7 +214,7 @@ EOF
     )"
 
     if [ -n "$print" ]; then
-        tmpfile=$(mktemp -t emacsc.XXXXXX)
+        tmpfile=$(mktemp -t emacsc.XXXXXX) || exit 1
 
         cleanup () {
             if [ -f "$tmpfile" ]; then
@@ -222,7 +222,10 @@ EOF
             fi
         }
 
-        trap "cleanup" 1 2 3 15
+        for sig in 0 1 2 3 15; do
+            trap 'ret=$?; trap "" 1 2 3 15; trap - 0
+                cleanup; exit $(( '"$sig"' ? 128 + '"$sig"' : ret ))' "$sig"
+        done
 
         qtmpfile="$(sed 's/[\\"]/\\&/g' <<EOF
 $tmpfile
@@ -292,7 +295,6 @@ if [ -n "$print" ]; then
     else
         ret=$?
     fi
-    cleanup
     exit $ret
 fi
 
