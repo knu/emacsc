@@ -1,5 +1,33 @@
 # Emacs as a command line tool
 
+## Installation with mise
+
+```sh
+mise use -g github:knu/emacsc@latest
+```
+
+This installs `emacsc`, `dired`, `ediff`, `ediff-merge`, `evil`, and `magit`.
+Emacs and emacsclient must be available on `PATH`.  The helper commands
+also require Perl at `/usr/bin/perl`; `evil` and `magit` require their
+respective Emacs packages.
+
+The archive includes `emacsc.el`.  To find its directory, run:
+
+```sh
+printf '%s/share/emacs/site-lisp\n' "$(mise where github:knu/emacsc)"
+```
+
+Add the printed directory to your Emacs `load-path`, then load the helper
+in your initialization file:
+
+```elisp
+(add-to-list 'load-path "/path/printed/above")
+(require 'emacsc)
+```
+
+Update this path after upgrading the mise installation.  Alternatively,
+install the Emacs Lisp package through ELPA as described below.
+
 ## emacsc(1)
 
 Emacsc(1) is a wrapper of emacsclient(1) for use within a terminal,
