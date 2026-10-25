@@ -65,6 +65,8 @@ usage: $(basename "$0") [-cdgknpw] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C D
                     show version number and exit
 
 Default options can be put in the environment variable EMACSCOPT.
+The client executable can be selected with EMACSCLIENT (default: emacsclient).
+Set it to an executable name or path, without arguments.
 
 This command is a wrapper of emacsclient(1) for use within a terminal.
 It adds the -t option so that Emacs opens a new frame on the current
@@ -83,7 +85,7 @@ EOF
 : ${ALTERNATE_EDITOR=}
 export ALTERNATE_EDITOR
 
-unset expr func create_frame quiet interactive void args ec_args dir print tmpfile
+unset expr func create_frame quiet interactive void args socket_name dir print tmpfile
 tty=t
 dir=.
 
@@ -153,7 +155,7 @@ while getopts cdgknps:e:x:f:C:wh-: opt; do
             # no-op for compatibility
             ;;
         s|socket-name)
-            ec_args="$ec_args -s $OPTARG"
+            socket_name="$OPTARG"
             ;;
         h|help)
             usage
@@ -254,13 +256,20 @@ if [ -n "${interactive+t}" ]; then
     create_frame=t
 fi
 
-ec="emacsclient $ec_args"
+ec=${EMACSCLIENT:-emacsclient}
+
+run_client () {
+    if [ -n "${socket_name+t}" ]; then
+        set -- -s "$socket_name" "$@"
+    fi
+    "$ec" "$@"
+}
 
 if [ -n "${quiet+t}" ]; then
     exec >/dev/null 2>&1
     unset tty create_frame
 else
-    case "$($ec -e window-system)" in
+    case "$(run_client -e window-system)" in
         w32)
             unset tty
             ;;
@@ -289,7 +298,7 @@ elif [ -n "${create_frame+t}" ]; then
 fi
 
 if [ -n "$print" ]; then
-    if $ec "$@"; then
+    if run_client "$@"; then
         cat "$tmpfile" >&3
         ret=0
     else
@@ -298,4 +307,7 @@ if [ -n "$print" ]; then
     exit $ret
 fi
 
-exec $ec "$@"
+if [ -n "${socket_name+t}" ]; then
+    set -- -s "$socket_name" "$@"
+fi
+exec "$ec" "$@"
