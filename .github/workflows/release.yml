@@ -34,6 +34,7 @@ jobs:
             test -x "bin/$command"
           done
           sh -n bin/emacsc
+          prove test/client.t
           for command in dired ediff ediff-merge evil magit; do
             perl -c "bin/$command"
           done
@@ -56,4 +57,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" "$RUNNER_TEMP/emacsc-${TAG#v}.tar.gz" --verify-tag --generate-notes
+        run: gh release create "$TAG" "$RUNNER_TEMP/emacsc-${TAG#v}.tar.gz" --verify-tag --title "$TAG" --notes-from-tag
