@@ -15,7 +15,7 @@ my $root = tempdir("client.XXXXXX", DIR => ".tmp", CLEANUP => 1);
 $root = abs_path($root);
 make_path("$root/bin", "$root/home");
 
-for my $name ("emacsclient", "neomacsclient", "client ; with spaces") {
+for my $name ("emacsclient", "neomacsclient", "gnuclient", "client ; with spaces") {
     open my $file, ">", "$root/bin/$name" or die $!;
     print {$file} <<'MOCK';
 #!/usr/bin/perl
@@ -36,8 +36,8 @@ MOCK
     chmod 0755, "$root/bin/$name" or die $!;
 }
 
-sub run {
-    my ($env, @args) = @_;
+sub run_as {
+    my ($program, $env, @args) = @_;
     local %ENV = %ENV;
     delete @ENV{qw(EMACSCLIENT EMACS_SERVER_NAME EMACSCOPT ALTERNATE_EDITOR INSIDE_EMACS CLIENT_TEST_STATUS)};
     @ENV{keys %$env} = values %$env;
@@ -46,7 +46,7 @@ sub run {
     $ENV{CLIENT_TEST_LOG} = "$root/calls";
     unlink $ENV{CLIENT_TEST_LOG};
     my $err = gensym;
-    my $pid = open3(undef, my $out, $err, $script, @args);
+    my $pid = open3(undef, my $out, $err, $program, @args);
     my $stdout = do { local $/; <$out> };
     my $stderr = do { local $/; <$err> };
     waitpid $pid, 0;
@@ -59,6 +59,10 @@ sub run {
     return ($status, \@calls, $stdout, $stderr);
 }
 
+sub run {
+    return run_as($script, @_);
+}
+
 for my $env ({}, {EMACSCLIENT => ""}, {EMACSCLIENT => "neomacsclient"}) {
     my ($status, $calls) = run($env, "-e", "t");
     is($status, 0, "evaluation succeeds");
@@ -68,6 +72,20 @@ for my $env ({}, {EMACSCLIENT => ""}, {EMACSCLIENT => "neomacsclient"}) {
               "selected client is used consistently");
     is($calls->[1]{alternate}, "", "automatic startup remains enabled by default");
 }
+
+for my $case (["neomacsc", "neomacsclient"], ["gnuc", "gnuclient"], ["neomacs", "neomacsclient"]) {
+    my ($name, $client) = @$case;
+    my $wrapper = "$root/bin/$name";
+    symlink $script, $wrapper or die $!;
+    my ($status, $calls) = run_as($wrapper, {}, "-e", "t");
+    is($status, 0, "$name invocation succeeds");
+    is_deeply([map { $_->{program} } @$calls], [("$root/bin/$client") x 2],
+              "$name selects $client for both calls");
+}
+
+my ($override_status, $override_calls) = run_as("$root/bin/neomacsc", {EMACSCLIENT => "emacsclient"}, "-e", "t");
+is($override_status, 0, "explicit client overrides the invocation name");
+is($override_calls->[-1]{program}, "$root/bin/emacsclient", "override selects the requested client");
 
 my ($status, $calls) = run({EMACSCLIENT => "$root/bin/client ; with spaces",
                            EMACS_SERVER_NAME => "from-env"},

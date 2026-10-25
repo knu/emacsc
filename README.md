@@ -7,11 +7,15 @@ mise use -g github:knu/emacsc@latest
 ```
 
 This installs `emacsc`, `dired`, `ediff`, `ediff-merge`, `evil`, and `magit`.
-By default, Emacs and emacsclient must be available on `PATH`.
+When invoked as `emacsc`, Emacs and emacsclient must be available on `PATH`.
 The helper commands also require Perl at `/usr/bin/perl`; `evil` and `magit`
 require their respective Emacs packages.
 
-To select another compatible client, set `EMACSCLIENT` to its executable
+The default client name comes from the command's basename: replace a trailing
+`c` with `client`, or append `client` if there is no trailing `c`.
+For example, a symlink named `neomacsc` selects `neomacsclient` automatically.
+
+To override the default, set `EMACSCLIENT` to a compatible client's executable
 name or path, without arguments.  For example, to use Neomacs and its
 `neomacs` server:
 

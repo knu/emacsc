@@ -30,12 +30,13 @@
 # See https://github.com/knu/emacsc for the latest information.
 
 VERSION=1.6.20260930
+command_name=${0##*/}
 
 usage () {
     cat <<EOF >&2
 emacsc version $VERSION
 
-usage: $(basename "$0") [-cdgknpw] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C DIR] [FILE..]
+usage: $command_name [-cdgknpw] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C DIR] [FILE..]
 
     -h, --help      show this help
     -d, --daemon    run Emacs as daemon and quit
@@ -65,7 +66,7 @@ usage: $(basename "$0") [-cdgknpw] [-s NAME] [-e EXPR | -x EXPR | -f FUNC] [-C D
                     show version number and exit
 
 Default options can be put in the environment variable EMACSCOPT.
-The client executable can be selected with EMACSCLIENT (default: emacsclient).
+The client executable can be selected with EMACSCLIENT (default: ${command_name%c}client).
 Set it to an executable name or path, without arguments.
 
 This command is a wrapper of emacsclient(1) for use within a terminal.
@@ -256,7 +257,7 @@ if [ -n "${interactive+t}" ]; then
     create_frame=t
 fi
 
-ec=${EMACSCLIENT:-emacsclient}
+ec=${EMACSCLIENT:-${command_name%c}client}
 
 run_client () {
     if [ -n "${socket_name+t}" ]; then
